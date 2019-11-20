@@ -35,22 +35,23 @@ def main():
     else:
         print("Fail to reject H0 => There is not enough evidence to support that data does not follow a normal distribution")
     
-    plt.subplot(2, 1, 1)
-    plt.xlabel("Hour in the Day (24 Hour Clock)")
-    plt.ylabel("Mean Sales (in $)")
-    plt.bar(hour_sales_df['time'],hour_sales_df['total_sales'])
+    # plt.subplot(2, 1, 1)
+    # plt.xlabel("Hour in the Day (24 Hour Clock)")
+    # plt.ylabel("Mean Sales (in $)")
+    # plt.bar(hour_sales_df['time'],hour_sales_df['total_sales'])
 
-    plt.subplot(2, 1, 2)
-    plt.xlabel("Hour in the Day (24 Hour Clock)")
-    plt.ylabel("Mean Conversion Rate")
-    plt.bar(hour_sales_df['time'],hour_sales_df['total_conversion'],color='r')
-    plt.show()
+    # plt.subplot(2, 1, 2)
+    # plt.xlabel("Hour in the Day (24 Hour Clock)")
+    # plt.ylabel("Mean Conversion Rate")
+    # plt.bar(hour_sales_df['time'],hour_sales_df['total_conversion'],color='r')
+    # plt.show()
   
 
     joined_df = conversions_df.merge(sales_df,on='hour').merge(visits_df,on='hour')
-    joined_df['new_date'] = [d.date() for d in joined_df['hour']]
-    joined_df['new_time'] = [d.time() for d in joined_df['hour']]
+    joined_df['new_date'] = [d.date().month for d in joined_df['hour']]
+    joined_df['new_time'] = [d.time().hour for d in joined_df['hour']]
     # print(joined_df)
+    joined_df.to_csv('joined.csv',index=False)
 
     # Compute r-squared value
     slope, intercept, r_value, p_value, std_err = stats.linregress(joined_df['total_sales'], joined_df['total_visitors'])
