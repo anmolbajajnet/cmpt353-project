@@ -10,13 +10,32 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.svm import SVC
+from sklearn.metrics import mean_squared_error
+
 
 # Run Command
-# python3 ml.py joined.csv
+# python3 ml.py data/conversions_2017-01-01_2019-01-01-2.csv data/sales_2017-01-01_2019-01-01.csv data/visits_2017-01-01_2019-01-01.csv
 
 def custom_round(x, base):
     return int(base * round(float(x)/base))
 
+def custom_score(y_pred,y_true):
+    accurate = 0
+    for i in range(0,len(y_pred)-1):
+        if abs(y_pred[i] - y_true[i]) <= 2:
+            accurate += 1
+    score = accurate/len(y_pred)
+    return score
+
+def get_season(month):
+    if month in (3,4,5):
+        return "Spring"
+    elif month in (6, 7, 8):
+        return "Summer"
+    elif month in (9,10,11):
+        return "Fall"
+    else:   
+        return "Winter"
 
 def main():
 
@@ -34,6 +53,8 @@ def main():
     joined_df['month'] = [d.date().month for d in joined_df['hour']]
     joined_df['day'] = [d.date().day for d in joined_df['hour']]
     joined_df['time'] = [d.time() for d in joined_df['hour']]
+    joined_df['season'] = joined_df['month'].apply(lambda x: get_season(x))
+
 
     joined_df.orders = joined_df.orders.apply(lambda x: custom_round(x, 5))
 
@@ -52,18 +73,19 @@ def main():
     # joined_df = pd.read_csv(joined,parse_dates=['hour'])
     # joined_df.orders = joined_df.orders.apply(lambda x: custom_round(x, base=5))
 
-    # X = joined_df[['year','day','orders','total_sessions_x','total_conversion','total_sales']].round(-1)
-    X = joined_df[['year','day','month','total_sessions_x','total_sales']]
-    
-    # print(X)
-    
-    y = joined_df['orders']
+    # Predicting orders => 30% Accuracy
+    # X = joined_df[['year','day','month','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
+    # y = joined_df['orders']
+
+    # Predicting Month => 25% Accuracy with Knn Model Score, 60% Accuracy with customized score that allows for the model to be wrong by couple months
+    X = joined_df[['year','day','orders','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
+    y = joined_df['month']
     
     # print(y.dtypes)
-    print("Y IS")
-    print(y)
+    # print("Y IS")
+    # print(y)
 
-    X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.50, random_state=42)
+    X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.30, random_state=42)
     # print("XTRAIN IS")
     # print(X_train)
 
@@ -83,16 +105,34 @@ def main():
     print('Using Gauss')
     print(gaus_model.score(X_valid, y_valid))
 
+    # 20 gives 28% accuracy
     knn_model = KNeighborsClassifier(n_neighbors=20)
     knn_model.fit(X_train, y_train)
     print('Using Knn')
     print(knn_model.score(X_valid, y_valid))
+    # print("Predictions are..")
+    # print(knn_model.predict(X_valid))
+    # print("Valid results are..")
+    # print(y_valid)
 
-    rfc_model = RandomForestClassifier(n_estimators=100,
-        max_depth=3, min_samples_leaf=10)
+
+    rfc_model = RandomForestClassifier(n_estimators=30,
+        max_depth=8, min_samples_leaf=10)
     rfc_model.fit(X_train, y_train)
     print('Using Rfc')
     print(rfc_model.score(X_valid, y_valid))
+    print("Predictions are..")
+    y_pred = rfc_model.predict(X_valid)
+    print(rfc_model.predict(X_valid))
+    print("Valid results are..")
+    y_true = y_valid.to_numpy()
+    print(y_valid.to_numpy())
+    print(mean_squared_error(y_true, y_pred))
+
+    # Custom "score" function since the model is ~60% accurate if you include the months it ~almost~ gets right
+    print("Custom score is")
+    print(custom_score(y_pred,y_true))
+
 
 
 if __name__ == '__main__':
