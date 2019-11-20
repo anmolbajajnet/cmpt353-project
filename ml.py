@@ -11,6 +11,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.svm import SVC
 from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.neural_network import MLPRegressor
+from sklearn.model_selection import RandomizedSearchCV
+from pprint import pprint
 
 
 # Run Command
@@ -73,13 +77,13 @@ def main():
     # joined_df = pd.read_csv(joined,parse_dates=['hour'])
     # joined_df.orders = joined_df.orders.apply(lambda x: custom_round(x, base=5))
 
-    # Predicting orders => 30% Accuracy
-    # X = joined_df[['year','day','month','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
-    # y = joined_df['orders']
+    # Predicting orders => 85% Accuracy using RFR and hyperparameter tuning parameters
+    X = joined_df[['year','day','month','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
+    y = joined_df['orders']
 
     # Predicting Month => 25% Accuracy with Knn Model Score, 60% Accuracy with customized score that allows for the model to be wrong by couple months
-    X = joined_df[['year','day','orders','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
-    y = joined_df['month']
+    # X = joined_df[['year','day','orders','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
+    # y = joined_df['month']
     
     # print(y.dtypes)
     # print("Y IS")
@@ -118,6 +122,9 @@ def main():
 
     rfc_model = RandomForestClassifier(n_estimators=30,
         max_depth=8, min_samples_leaf=10)
+
+    
+
     rfc_model.fit(X_train, y_train)
     print('Using Rfc')
     print(rfc_model.score(X_valid, y_valid))
@@ -133,7 +140,54 @@ def main():
     print("Custom score is")
     print(custom_score(y_pred,y_true))
 
+    
+    rfr_model = RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=5,
+           max_features='sqrt', max_leaf_nodes=None,
+           min_impurity_decrease=0.0, min_impurity_split=None,
+           min_samples_leaf=1, min_samples_split=2,
+           min_weight_fraction_leaf=0.0, n_estimators=70, n_jobs=None,
+           oob_score=False, random_state=None, verbose=0, warm_start=False)
 
+    rfr_model.fit(X_train, y_train)
+    print('Using Rfr')
+    print(rfr_model.score(X_valid, y_valid))
+
+# Hyperparameter Tuning => https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
+# This model generates the best parameters to use.
+
+#     # Number of trees in random forest
+#     n_estimators = [int(x) for x in np.linspace(start = 3, stop = 70, num = 50)]
+#     # Number of features to consider at every split
+#     max_features = ['auto', 'sqrt']
+#     # Maximum number of levels in tree
+#     max_depth = [int(x) for x in np.linspace(3, 70, num = 50)]
+#     max_depth.append(None)
+#     # Minimum number of samples required to split a node
+#     min_samples_split = [2, 5, 10]
+#     # Minimum number of samples required at each leaf node
+#     min_samples_leaf = [1, 2, 4]
+#     # Method of selecting samples for training each tree
+#     bootstrap = [True, False]# Create the random grid
+# # Create the random grid
+#     random_grid = {'n_estimators': n_estimators,
+#                 'max_features': max_features,
+#                 'max_depth': max_depth,
+#                 'min_samples_split': min_samples_split,
+#                 'min_samples_leaf': min_samples_leaf,
+#                 'bootstrap': bootstrap}
+
+#     pprint(random_grid)
+
+#     # Use the random grid to search for best hyperparameters
+#     # First create the base model to tune
+#     rf = RandomForestRegressor()
+#     # Random search of parameters, using 3 fold cross validation, 
+#     # search across 100 different combinations, and use all available cores
+#     rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid, n_iter = 2000, cv = 3, verbose=2, random_state=42, n_jobs = -1)# Fit the random search model
+#     rf_random.fit(X_train, y_train)
+#     print(rf_random.best_params_)
+#     print(rf_random.best_estimator_)
+            
 
 if __name__ == '__main__':
     main()
