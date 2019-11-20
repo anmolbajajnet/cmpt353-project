@@ -23,6 +23,7 @@ def main():
 
     # What time of the day has the highest average sales?
     hour_sales_df = sales_df[['hour','total_sales']]
+    hour_sales_df['total_conversion'] = conversions_df['total_conversion']
     hour_sales_df['time'] = [d.time().hour for d in hour_sales_df['hour']]
     hour_sales_df = hour_sales_df.groupby(['time']).mean().sort_values(by=['total_sales'], ascending=False).reset_index()
     print(hour_sales_df)
@@ -34,14 +35,17 @@ def main():
     else:
         print("Fail to reject H0 => There is not enough evidence to support that data does not follow a normal distribution")
     
+    plt.subplot(2, 1, 1)
     plt.xlabel("Hour in the Day (24 Hour Clock)")
     plt.ylabel("Mean Sales (in $)")
     plt.bar(hour_sales_df['time'],hour_sales_df['total_sales'])
+
+    plt.subplot(2, 1, 2)
+    plt.xlabel("Hour in the Day (24 Hour Clock)")
+    plt.ylabel("Mean Conversion Rate")
+    plt.bar(hour_sales_df['time'],hour_sales_df['total_conversion'],color='r')
     plt.show()
   
-
-
-
 
     joined_df = conversions_df.merge(sales_df,on='hour').merge(visits_df,on='hour')
     joined_df['new_date'] = [d.date() for d in joined_df['hour']]
