@@ -5,6 +5,8 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from pandas.plotting import register_matplotlib_converters 
 register_matplotlib_converters()
+import seaborn
+
 
 # Run Command
 # python3 chart.py data/conversions_2017-01-01_2019-01-01-2.csv data/sales_2017-01-01_2019-01-01.csv data/visits_2017-01-01_2019-01-01.csv
@@ -34,17 +36,18 @@ def main():
         print("The data does not follow a normal distribution")
     else:
         print("Fail to reject H0 => There is not enough evidence to support that data does not follow a normal distribution")
-    
-    # plt.subplot(2, 1, 1)
-    # plt.xlabel("Hour in the Day (24 Hour Clock)")
-    # plt.ylabel("Mean Sales (in $)")
-    # plt.bar(hour_sales_df['time'],hour_sales_df['total_sales'])
 
-    # plt.subplot(2, 1, 2)
-    # plt.xlabel("Hour in the Day (24 Hour Clock)")
-    # plt.ylabel("Mean Conversion Rate")
-    # plt.bar(hour_sales_df['time'],hour_sales_df['total_conversion'],color='r')
-    # plt.show()
+    seaborn.set()
+    plt.subplot(2, 1, 1)
+    plt.xlabel("Hour in the Day (24 Hour Clock)")
+    plt.ylabel("Mean Sales (in $)")
+    plt.bar(hour_sales_df['time'],hour_sales_df['total_sales'])
+
+    plt.subplot(2, 1, 2)
+    plt.xlabel("Hour in the Day (24 Hour Clock)")
+    plt.ylabel("Mean Conversion Rate")
+    plt.bar(hour_sales_df['time'],hour_sales_df['total_conversion'],color='r')
+    plt.show()
   
 
     joined_df = conversions_df.merge(sales_df,on='hour').merge(visits_df,on='hour')
@@ -61,12 +64,11 @@ def main():
     print(joined_df['total_sales'].corr(joined_df['total_visitors']))
 
     # Are time and sales correlated?
-    # time_sales_corr = joined_df['total_sales'].corr(joined_df['new_time'])
-    # print ('Correlation coefficient of total sales and time in the day is %d' % (time_sales_corr))
+    time_sales_corr = joined_df['total_sales'].corr(joined_df['new_time'])
+    print ('Correlation coefficient of total sales and time in the day is %d' % (time_sales_corr))
 
     # plt.plot(joined_df['hour'],joined_df['total_sales'], label='total sales')
     # plt.plot(joined_df['hour'], joined_df['total_visitors'], label='total visitors')
-    # plt.plot(joined_df['hour'], joined_df['total_conversion'], label='total conversion')
     # plt.legend()
     # plt.show()
 

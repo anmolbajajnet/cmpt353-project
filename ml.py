@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from pandas.plotting import register_matplotlib_converters 
+register_matplotlib_converters()
+import seaborn as sns
 import sys
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
@@ -60,7 +63,7 @@ def main():
     joined_df['season'] = joined_df['month'].apply(lambda x: get_season(x))
 
 
-    joined_df.orders = joined_df.orders.apply(lambda x: custom_round(x, 5))
+    # joined_df.orders = joined_df.orders.apply(lambda x: custom_round(x, 5))
 
     
 
@@ -78,7 +81,8 @@ def main():
     # joined_df.orders = joined_df.orders.apply(lambda x: custom_round(x, base=5))
 
     # Predicting orders => 85% Accuracy using RFR and hyperparameter tuning parameters
-    X = joined_df[['year','day','month','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
+    # X = joined_df[['year','day','month','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
+    X = joined_df[['year','day','month','total_sessions_x']]
     y = joined_df['orders']
 
     # Predicting Month => 25% Accuracy with Knn Model Score, 60% Accuracy with customized score that allows for the model to be wrong by couple months
@@ -136,21 +140,58 @@ def main():
     print(y_valid.to_numpy())
     print(mean_squared_error(y_true, y_pred))
 
+    # sns.set()
+    # sns.lineplot(data=y_pred, color="g")
+    # ax2 = plt.twinx()
+    # sns.lineplot(data=y_true, color="b", ax=ax2)
+    # plt.show()
+
+
     # Custom "score" function since the model is ~60% accurate if you include the months it ~almost~ gets right
     print("Custom score is")
     print(custom_score(y_pred,y_true))
 
-    
-    rfr_model = RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=5,
-           max_features='sqrt', max_leaf_nodes=None,
-           min_impurity_decrease=0.0, min_impurity_split=None,
-           min_samples_leaf=1, min_samples_split=2,
-           min_weight_fraction_leaf=0.0, n_estimators=70, n_jobs=None,
-           oob_score=False, random_state=None, verbose=0, warm_start=False)
+    # For round to 5
+    # rfr_model = RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=5,
+    #        max_features='sqrt', max_leaf_nodes=None,
+    #        min_impurity_decrease=0.0, min_impurity_split=None,
+    #        min_samples_leaf=1, min_samples_split=2,
+    #        min_weight_fraction_leaf=0.0, n_estimators=70, n_jobs=None,
+    #        oob_score=False, random_state=None, verbose=0, warm_start=False)
+
+    rfr_model = RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=7,
+                      max_features='sqrt', max_leaf_nodes=None,
+                      min_impurity_decrease=0.0, min_impurity_split=None,
+                      min_samples_leaf=1, min_samples_split=2,
+                      min_weight_fraction_leaf=0.0, n_estimators=33,
+                      n_jobs=None, oob_score=False, random_state=None,
+                      verbose=0, warm_start=False)
+
+
 
     rfr_model.fit(X_train, y_train)
     print('Using Rfr')
     print(rfr_model.score(X_valid, y_valid))
+    print(rfr_model.score(X_train, y_train))
+    y_pred = rfr_model.predict(X_valid)
+    y_true = y_valid.to_numpy()
+
+    graph_df =  pd.DataFrame({'y_pred':y_pred.round().astype(int), 'y_true': y_true})
+    print(graph_df)
+    sns.set(style="darkgrid")
+    # sns.lineplot(data=y_true, color="g")
+    # ax2 = plt.twinx()
+    # sns.lineplot(data=y_pred, color="b", ax=ax2)
+    # # ax2.lines[0].set_linestyle("--")
+    # plt.show()
+
+    # sns.lineplot(data=df, x='x', y='y', hue='color')
+
+    fmri = sns.load_dataset("fmri")
+    sns.lineplot(y="y_pred",
+             hue="y_true", style="event",
+             data=fmri)
+
 
 # Hyperparameter Tuning => https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
 # This model generates the best parameters to use.
