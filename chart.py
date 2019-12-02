@@ -138,6 +138,20 @@ def main():
     print("T-test for Year 2017 and 2018")
     print(stats.ttest_ind(result['orders_2017'], result['orders_2018']).pvalue)
 
+    # Growth in years 2017-2018
+    orders_in_2017 = result['orders_2017'].to_numpy()
+    total_orders_2017 = np.sum(orders_in_2017)
+    print("Total orders in 2017:")
+    print(total_orders_2017)
+    orders_in_2018 = result['orders_2018'].to_numpy()
+    total_orders_2018 = np.sum(orders_in_2018)
+    print("Total orders in 2018:")
+    print(total_orders_2018)
+    growth = (total_orders_2018/total_orders_2017 * 100) - 100
+    print("Growth 2017-2018")
+    print(growth)
+
+
     # joined_df = conversions_df.merge(sales_df,on='hour').merge(visits_df,on='hour')
     # joined_df['new_date'] = [d.date().month for d in joined_df['hour']]
     # joined_df['new_time'] = [d.time().hour for d in joined_df['hour']]
