@@ -9,6 +9,7 @@ import seaborn as sns
 import datetime
 
 
+
 # Run Command
 # python3 chart.py data/conversions_2017-01-01_2019-01-01-2.csv data/sales_2017-01-01_2019-01-01.csv data/visits_2017-01-01_2019-01-01.csv
 
@@ -46,7 +47,13 @@ def main():
     ax.set_xlabel("Hour in the Day (24 Hour Clock)")
     ax.set_ylabel("Mean Sales (in $)")
     ax.set_title("Hour in the Day vs Sales")
-    plt.show()
+    fig.savefig('DayTrend.png')
+    # plt.show()
+
+    # Question 1 Statistics
+    print("Normality test for Hourly Sales")
+    print(stats.normaltest(hour_sales_df['total_sales']).pvalue)
+
 
     # Question 2:
     # Which months have the highest average sales?
@@ -63,8 +70,9 @@ def main():
     ax=sns.barplot(x=group_by_month['month'], y=group_by_month['orders'])
     ax.set_xlabel('Month')
     ax.set_ylabel('Mean Orders')
-    ax.set_title('Month vs. Mean Orders')    
-    plt.show()
+    ax.set_title('Month vs. Mean Orders')
+    plt.savefig('MontlyAvgSales.png')    
+    # plt.show()
     
 
     # Question 3:
@@ -111,7 +119,24 @@ def main():
     autolabel(rects2)
 
     fig.tight_layout()
-    plt.show()
+    fig.savefig('YearlyTrend.png')
+    # plt.show()
+
+    # Question 3 Statistics
+
+    # Normality Test
+    print("Normality test for Year 2017 Sales")
+    print(stats.normaltest(result['orders_2017']).pvalue)
+    print("Normality test for Year 2018 Sales")
+    print(stats.normaltest(result['orders_2018']).pvalue)
+
+    # Equal Variance Test
+    print("Equal Variance Test for Year 2017 and 2018")
+    print(stats.levene(result['orders_2017'], result['orders_2018']).pvalue)
+
+    # T-test 
+    print("T-test for Year 2017 and 2018")
+    print(stats.ttest_ind(result['orders_2017'], result['orders_2018']).pvalue)
 
     # joined_df = conversions_df.merge(sales_df,on='hour').merge(visits_df,on='hour')
     # joined_df['new_date'] = [d.date().month for d in joined_df['hour']]
