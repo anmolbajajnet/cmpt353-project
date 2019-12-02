@@ -149,15 +149,14 @@ def main():
                       n_jobs=None, oob_score=False, random_state=None,
                       verbose=0, warm_start=False)
 
-    # RFR Model with default parameters
-    # rfr_model = RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
-    #         max_depth=2, max_features='auto', max_leaf_nodes=None,
-    #         min_impurity_decrease=0.0, min_impurity_split=None,
-    #         min_samples_leaf=1, min_samples_split=2,
-    #         min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=None,
-    #         oob_score=False, random_state=0, verbose=0, warm_start=False)
-
-
+    # Default RFR Model
+    # rfr_model = RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=2,
+    #        max_features='auto', max_leaf_nodes=None,
+    #        min_impurity_decrease=0.0, min_impurity_split=None,
+    #        min_samples_leaf=1, min_samples_split=2,
+    #        min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=None,
+    #        oob_score=False, random_state=0, verbose=0, warm_start=False)
+   
 
 
     rfr_model.fit(X_train, y_train)
