@@ -18,6 +18,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import RandomizedSearchCV
 from pprint import pprint
+import datetime
 
 
 # Run Command
@@ -66,21 +67,15 @@ def main():
     # joined_df.orders = joined_df.orders.apply(lambda x: custom_round(x, 5))
 
     
-
-
     joined_df = joined_df.drop(columns=['hour','date'])
     joined_df = joined_df.groupby(['year','month', 'day']).sum().reset_index().round()
 
-    # print(joined_df)
 
-    # print(joined_df)
     joined_df.to_csv('joined.csv')
 
-    # joined = sys.argv[1]
-    # joined_df = pd.read_csv(joined,parse_dates=['hour'])
     # joined_df.orders = joined_df.orders.apply(lambda x: custom_round(x, base=5))
 
-    # Predicting orders => 85% Accuracy using RFR and hyperparameter tuning parameters
+    # Predicting orders => ~65% Accuracy using RFR and hyperparameter tuned parameters
     # X = joined_df[['year','day','month','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
     X = joined_df[['year','day','month','total_sessions_x']]
     y = joined_df['orders']
@@ -88,35 +83,29 @@ def main():
     # Predicting Month => 25% Accuracy with Knn Model Score, 60% Accuracy with customized score that allows for the model to be wrong by couple months
     # X = joined_df[['year','day','orders','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
     # y = joined_df['month']
-    
-    # print(y.dtypes)
-    # print("Y IS")
-    # print(y)
+
 
     X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.30, random_state=42)
-    # print("XTRAIN IS")
-    # print(X_train)
 
-
-    model = SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+    svc_model = SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
     decision_function_shape='ovr', degree=3, gamma='auto', kernel='rbf',
     max_iter=-1, probability=False, random_state=None, shrinking=True,
     tol=0.001, verbose=False)
 
-    model.fit(X_train, y_train)
-    print('Using SVC')
-    print(model.score(X_valid, y_valid))
+    svc_model.fit(X_train, y_train)
+    print('Score using SVC')
+    print(svc_model.score(X_valid, y_valid))
 
     gaus_model =  GaussianNB()
 
     gaus_model.fit(X_train, y_train)
-    print('Using Gauss')
+    print('Score using Gauss')
     print(gaus_model.score(X_valid, y_valid))
 
     # 20 gives 28% accuracy
     knn_model = KNeighborsClassifier(n_neighbors=20)
     knn_model.fit(X_train, y_train)
-    print('Using Knn')
+    print('Score using KNN')
     print(knn_model.score(X_valid, y_valid))
     # print("Predictions are..")
     # print(knn_model.predict(X_valid))
@@ -125,31 +114,23 @@ def main():
 
 
     rfc_model = RandomForestClassifier(n_estimators=30,
-        max_depth=8, min_samples_leaf=10)
-
-    
+        max_depth=8, min_samples_leaf=10)    
 
     rfc_model.fit(X_train, y_train)
-    print('Using Rfc')
+    print('Score using RFC:')
     print(rfc_model.score(X_valid, y_valid))
-    print("Predictions are..")
-    y_pred = rfc_model.predict(X_valid)
-    print(rfc_model.predict(X_valid))
-    print("Valid results are..")
-    y_true = y_valid.to_numpy()
-    print(y_valid.to_numpy())
-    print(mean_squared_error(y_true, y_pred))
-
-    # sns.set()
-    # sns.lineplot(data=y_pred, color="g")
-    # ax2 = plt.twinx()
-    # sns.lineplot(data=y_true, color="b", ax=ax2)
-    # plt.show()
+    # print("Predictions are..")
+    # y_pred = rfc_model.predict(X_valid)
+    # print(rfc_model.predict(X_valid))
+    # print("Valid results are..")
+    # y_true = y_valid.to_numpy()
+    # print(y_valid.to_numpy())
+ 
 
 
     # Custom "score" function since the model is ~60% accurate if you include the months it ~almost~ gets right
-    print("Custom score is")
-    print(custom_score(y_pred,y_true))
+    # print("Custom score is")
+    # print(custom_score(y_pred,y_true))
 
     # For round to 5
     # rfr_model = RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=5,
@@ -159,6 +140,7 @@ def main():
     #        min_weight_fraction_leaf=0.0, n_estimators=70, n_jobs=None,
     #        oob_score=False, random_state=None, verbose=0, warm_start=False)
 
+    # RFR Model with Hypertuned Parameters 
     rfr_model = RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=7,
                       max_features='sqrt', max_leaf_nodes=None,
                       min_impurity_decrease=0.0, min_impurity_split=None,
@@ -167,30 +149,54 @@ def main():
                       n_jobs=None, oob_score=False, random_state=None,
                       verbose=0, warm_start=False)
 
+    # RFR Model with default parameters
+    # rfr_model = RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+    #         max_depth=2, max_features='auto', max_leaf_nodes=None,
+    #         min_impurity_decrease=0.0, min_impurity_split=None,
+    #         min_samples_leaf=1, min_samples_split=2,
+    #         min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=None,
+    #         oob_score=False, random_state=0, verbose=0, warm_start=False)
+
+
 
 
     rfr_model.fit(X_train, y_train)
-    print('Using Rfr')
+    print('Score using RFR Model')
+    print('- Valid Data Score')
     print(rfr_model.score(X_valid, y_valid))
+    print('- Training Data Score')
     print(rfr_model.score(X_train, y_train))
     y_pred = rfr_model.predict(X_valid)
     y_true = y_valid.to_numpy()
-
     graph_df =  pd.DataFrame({'y_pred':y_pred.round().astype(int), 'y_true': y_true})
-    print(graph_df)
+    data = X_valid[['year', 'month', 'day']].apply(lambda s : datetime.datetime(*s),axis = 1)
+    time_df = pd.DataFrame(data, columns = ['timestamp']).reset_index()
+    graph_df['date'] = time_df['timestamp']
+
     sns.set(style="darkgrid")
-    # sns.lineplot(data=y_true, color="g")
-    # ax2 = plt.twinx()
-    # sns.lineplot(data=y_pred, color="b", ax=ax2)
-    # # ax2.lines[0].set_linestyle("--")
+
+    # Plotting ML Prediction graphs
+    graph_df = graph_df.sort_values(by=['date'])
+    fig, ax = plt.subplots()
+    ax.set_xlabel('Date (YYYY-MM)')
+    ax.set_ylabel('Orders over Time')
+    ax.set_title('Date vs. Orders over Time')      
+    ax.plot(graph_df['date'], graph_df['y_pred'], label="Predicted Orders")
+    ax.plot(graph_df['date'], graph_df['y_true'], label="Actual Orders")
+    ax.legend()
     # plt.show()
+    fig.savefig('PredVsActualOrders.png')
+    # plt.savefig('PredVsActualOrders.png')
 
-    # sns.lineplot(data=df, x='x', y='y', hue='color')
+    # Plotting the Residual graph
+    fig, ax = plt.subplots()
+    ax.hist(graph_df['y_pred']-graph_df['y_true'])
+    ax.set_xlabel("Residuals")
+    ax.set_ylabel("Counts")
+    ax.set_title("Residuals vs Counts")
+    # plt.show()
+    plt.savefig('ResidualsVsCounts.png')
 
-    fmri = sns.load_dataset("fmri")
-    sns.lineplot(y="y_pred",
-             hue="y_true", style="event",
-             data=fmri)
 
 
 # Hyperparameter Tuning => https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
