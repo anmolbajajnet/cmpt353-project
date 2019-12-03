@@ -27,13 +27,6 @@ import datetime
 def custom_round(x, base):
     return int(base * round(float(x)/base))
 
-def custom_score(y_pred,y_true):
-    accurate = 0
-    for i in range(0,len(y_pred)-1):
-        if abs(y_pred[i] - y_true[i]) <= 2:
-            accurate += 1
-    score = accurate/len(y_pred)
-    return score
 
 def get_season(month):
     if month in (3,4,5):
@@ -71,7 +64,6 @@ def main():
     joined_df.to_csv('joined.csv')
 
     # Predicting orders => ~65% Accuracy using RFR and hyperparameter tuned parameters
-    # X = joined_df[['year','day','month','total_sessions_x','total_carts','total_checkouts','total_sales','gross_sales','total_visitors']]
     X = joined_df[['year','day','month','total_sessions_x']]
     y = joined_df['orders']
 
@@ -97,15 +89,11 @@ def main():
     print('Score using Gauss')
     print(gaus_model.score(X_valid, y_valid))
 
-    # 20 gives 28% accuracy
+  
     knn_model = KNeighborsClassifier(n_neighbors=20)
     knn_model.fit(X_train, y_train)
     print('Score using KNN')
     print(knn_model.score(X_valid, y_valid))
-    # print("Predictions are..")
-    # print(knn_model.predict(X_valid))
-    # print("Valid results are..")
-    # print(y_valid)
 
 
     rfc_model = RandomForestClassifier(n_estimators=30,
@@ -115,22 +103,6 @@ def main():
     print('Score using RFC:')
     print(rfc_model.score(X_valid, y_valid))
 
-
-
-    # Custom "score" function since the model is ~60% accurate if you include the months it ~almost~ gets right
-    # print("Custom score is")
-    # print(custom_score(y_pred,y_true))
-
-
-
-    # RFR Model with Hypertuned Parameters 
-    rfr_model = RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=7,
-                      max_features='sqrt', max_leaf_nodes=None,
-                      min_impurity_decrease=0.0, min_impurity_split=None,
-                      min_samples_leaf=1, min_samples_split=2,
-                      min_weight_fraction_leaf=0.0, n_estimators=33,
-                      n_jobs=None, oob_score=False, random_state=None,
-                      verbose=0, warm_start=False)
 
     # Default RFR Model
     default_rfr_model = RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=2,
@@ -144,6 +116,14 @@ def main():
     print('Score using Default parameters for RFR')
     print(default_rfr_model.score(X_valid, y_valid))
 
+    # RFR Model with Hypertuned Parameters 
+    rfr_model = RandomForestRegressor(bootstrap=True, criterion='mse', max_depth=7,
+                      max_features='sqrt', max_leaf_nodes=None,
+                      min_impurity_decrease=0.0, min_impurity_split=None,
+                      min_samples_leaf=1, min_samples_split=2,
+                      min_weight_fraction_leaf=0.0, n_estimators=33,
+                      n_jobs=None, oob_score=False, random_state=None,
+                      verbose=0, warm_start=False)
 
     rfr_model.fit(X_train, y_train)
     print('Score using RFR Model')
@@ -151,8 +131,12 @@ def main():
     print(rfr_model.score(X_valid, y_valid))
     print('- Training Data Score')
     print(rfr_model.score(X_train, y_train))
+    
+
     y_pred = rfr_model.predict(X_valid)
     y_true = y_valid.to_numpy()
+
+
     graph_df =  pd.DataFrame({'y_pred':y_pred.round().astype(int), 'y_true': y_true})
     data = X_valid[['year', 'month', 'day']].apply(lambda s : datetime.datetime(*s),axis = 1)
     time_df = pd.DataFrame(data, columns = ['timestamp']).reset_index()
@@ -187,38 +171,38 @@ def main():
 # Hyperparameter Tuning => https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
 # This model generates the best parameters to use.
 
-    # Number of trees in random forest
-    n_estimators = [int(x) for x in np.linspace(start = 3, stop = 70, num = 50)]
-    # Number of features to consider at every split
-    max_features = ['auto', 'sqrt']
-    # Maximum number of levels in tree
-    max_depth = [int(x) for x in np.linspace(3, 70, num = 50)]
-    max_depth.append(None)
-    # Minimum number of samples required to split a node
-    min_samples_split = [2, 5, 10]
-    # Minimum number of samples required at each leaf node
-    min_samples_leaf = [1, 2, 4]
-    # Method of selecting samples for training each tree
-    bootstrap = [True, False]# Create the random grid
-# Create the random grid
-    random_grid = {'n_estimators': n_estimators,
-                'max_features': max_features,
-                'max_depth': max_depth,
-                'min_samples_split': min_samples_split,
-                'min_samples_leaf': min_samples_leaf,
-                'bootstrap': bootstrap}
+#     # Number of trees in random forest
+#     n_estimators = [int(x) for x in np.linspace(start = 3, stop = 70, num = 50)]
+#     # Number of features to consider at every split
+#     max_features = ['auto', 'sqrt']
+#     # Maximum number of levels in tree
+#     max_depth = [int(x) for x in np.linspace(3, 70, num = 50)]
+#     max_depth.append(None)
+#     # Minimum number of samples required to split a node
+#     min_samples_split = [2, 5, 10]
+#     # Minimum number of samples required at each leaf node
+#     min_samples_leaf = [1, 2, 4]
+#     # Method of selecting samples for training each tree
+#     bootstrap = [True, False]# Create the random grid
+# # Create the random grid
+#     random_grid = {'n_estimators': n_estimators,
+#                 'max_features': max_features,
+#                 'max_depth': max_depth,
+#                 'min_samples_split': min_samples_split,
+#                 'min_samples_leaf': min_samples_leaf,
+#                 'bootstrap': bootstrap}
 
-    pprint(random_grid)
+#     pprint(random_grid)
 
-    # Use the random grid to search for best hyperparameters
-    # First create the base model to tune
-    rf = RandomForestRegressor()
-    # Random search of parameters, using 3 fold cross validation, 
-    # search across 100 different combinations, and use all available cores
-    rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid, n_iter = 2000, cv = 3, verbose=2, random_state=42, n_jobs = -1)# Fit the random search model
-    rf_random.fit(X_train, y_train)
-    print(rf_random.best_params_)
-    print(rf_random.best_estimator_)
+#     # Use the random grid to search for best hyperparameters
+#     # First create the base model to tune
+#     rf = RandomForestRegressor()
+#     # Random search of parameters, using 3 fold cross validation, 
+#     # search across 100 different combinations, and use all available cores
+#     rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid, n_iter = 2000, cv = 3, verbose=2, random_state=42, n_jobs = -1)# Fit the random search model
+#     rf_random.fit(X_train, y_train)
+#     print(rf_random.best_params_)
+#     print(rf_random.best_estimator_)
             
 
 if __name__ == '__main__':
