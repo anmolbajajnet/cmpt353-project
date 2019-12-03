@@ -1,8 +1,11 @@
-# CMPT353 - Project
+# CMPT353 - Final Report
 
 ## Purpose
 
 There are two (2) main Python files for the analysis of data from e-commerce website [BrightWhiteSmilePro.com](https://brightwhitesmilepro.com/).
+
+
+<img src="https://cdn.shopify.com/s/files/1/0548/5765/files/sig_410x.png?v=1516980032">
 
 ### chart.py
 
@@ -24,9 +27,11 @@ The order of operation is irrelevant as both .py files are independent of each o
 ## Commands
 
 Running ml.py 
+
 `$ python3 ml.py data/conversions_2017-01-01_2019-01-01-2.csv data/sales_2017-01-01_2019-01-01.csv data/visits_2017-01-01_2019-01-01.csv`
 
 Running chart.py 
+
 `$ python3 chart.py data/conversions_2017-01-01_2019-01-01-2.csv data/sales_2017-01-01_2019-01-01.csv data/visits_2017-01-01_2019-01-01.csv`
 
 ## Expected Output
