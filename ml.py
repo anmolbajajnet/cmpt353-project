@@ -171,38 +171,38 @@ def main():
 # Hyperparameter Tuning => https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
 # This model generates the best parameters to use.
 
-#     # Number of trees in random forest
-#     n_estimators = [int(x) for x in np.linspace(start = 3, stop = 70, num = 50)]
-#     # Number of features to consider at every split
-#     max_features = ['auto', 'sqrt']
-#     # Maximum number of levels in tree
-#     max_depth = [int(x) for x in np.linspace(3, 70, num = 50)]
-#     max_depth.append(None)
-#     # Minimum number of samples required to split a node
-#     min_samples_split = [2, 5, 10]
-#     # Minimum number of samples required at each leaf node
-#     min_samples_leaf = [1, 2, 4]
-#     # Method of selecting samples for training each tree
-#     bootstrap = [True, False]# Create the random grid
-# # Create the random grid
-#     random_grid = {'n_estimators': n_estimators,
-#                 'max_features': max_features,
-#                 'max_depth': max_depth,
-#                 'min_samples_split': min_samples_split,
-#                 'min_samples_leaf': min_samples_leaf,
-#                 'bootstrap': bootstrap}
+    # Number of trees in random forest
+    n_estimators = [int(x) for x in np.linspace(start = 3, stop = 70, num = 50)]
+    # Number of features to consider at every split
+    max_features = ['auto', 'sqrt']
+    # Maximum number of levels in tree
+    max_depth = [int(x) for x in np.linspace(3, 70, num = 50)]
+    max_depth.append(None)
+    # Minimum number of samples required to split a node
+    min_samples_split = [2, 5, 10]
+    # Minimum number of samples required at each leaf node
+    min_samples_leaf = [1, 2, 4]
+    # Method of selecting samples for training each tree
+    bootstrap = [True, False]# Create the random grid
+# Create the random grid
+    random_grid = {'n_estimators': n_estimators,
+                'max_features': max_features,
+                'max_depth': max_depth,
+                'min_samples_split': min_samples_split,
+                'min_samples_leaf': min_samples_leaf,
+                'bootstrap': bootstrap}
 
-#     pprint(random_grid)
+    pprint(random_grid)
 
-#     # Use the random grid to search for best hyperparameters
-#     # First create the base model to tune
-#     rf = RandomForestRegressor()
-#     # Random search of parameters, using 3 fold cross validation, 
-#     # search across 100 different combinations, and use all available cores
-#     rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid, n_iter = 2000, cv = 3, verbose=2, random_state=42, n_jobs = -1)# Fit the random search model
-#     rf_random.fit(X_train, y_train)
-#     print(rf_random.best_params_)
-#     print(rf_random.best_estimator_)
+    # Use the random grid to search for best hyperparameters
+    # First create the base model to tune
+    rf = RandomForestRegressor()
+    # Random search of parameters, using 3 fold cross validation, 
+    # search across 100 different combinations, and use all available cores
+    rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid, n_iter = 2000, cv = 3, verbose=2, random_state=42, n_jobs = -1)# Fit the random search model
+    rf_random.fit(X_train, y_train)
+    print(rf_random.best_params_)
+    print(rf_random.best_estimator_)
             
 
 if __name__ == '__main__':
